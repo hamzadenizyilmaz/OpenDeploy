@@ -1,0 +1,22 @@
+[Unit]
+Description=OpenDeploy DNS Admin Panel
+After=network-online.target opendeploy-dns-cloud-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/opendeploy/OpenDeploy\x20DNS\x20Cloud/DNS_Admin_Panel
+EnvironmentFile=/etc/opendeploy/opendeploy.env
+ExecStart=/usr/bin/env node ../node_modules/next/dist/bin/next start --port ${DNS_CLOUD_ADMIN_PORT}
+Restart=always
+RestartSec=5
+User=opendeploy
+Group=opendeploy
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/opendeploy /var/log/opendeploy
+
+[Install]
+WantedBy=multi-user.target

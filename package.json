@@ -1,0 +1,35 @@
+{
+  "name": "opendeploy",
+  "version": "v2.0.0-enterprise-ops",
+  "private": true,
+  "description": "Open-source web control panel for deploying, managing and monitoring modern JavaScript applications.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:agent\" \"npm:dev:worker\"",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api": "npm --workspace apps/api run dev",
+    "dev:agent": "npm --workspace apps/agent run dev",
+    "dev:worker": "npm --workspace apps/worker run dev",
+    "build": "npm run build --workspaces --if-present",
+    "start": "npm run start --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate": "node scripts/db/apply-prisma-schema.js prisma/schema.prisma",
+    "prisma:deploy": "node scripts/db/apply-prisma-schema.js prisma/schema.prisma",
+    "prisma:dev": "prisma migrate dev --schema prisma/schema.prisma",
+    "format": "prettier --write .",
+    "seed": "npm --workspace apps/api run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "prettier": "^3.3.3",
+    "prisma": "^5.20.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}

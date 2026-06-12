@@ -1,0 +1,7 @@
+{
+  "name": "@opendeploy/shared",
+  "version": "0.2.0",
+  "private": true,
+  "main": "src/index.js",
+  "type": "commonjs"
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenDeploy Web
+After=network.target opendeploy-api.service
+
+[Service]
+Type=simple
+User=opendeploy
+Group=opendeploy
+WorkingDirectory=/opt/opendeploy/apps/web
+EnvironmentFile=/etc/opendeploy/opendeploy.env
+ExecStart=/usr/bin/env bash /opt/opendeploy/scripts/runtime/start-web.sh
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

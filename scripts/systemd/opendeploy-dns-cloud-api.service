@@ -1,0 +1,22 @@
+[Unit]
+Description=OpenDeploy DNS Cloud API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/opendeploy/OpenDeploy\x20DNS\x20Cloud/DNS_Cloud_API
+EnvironmentFile=/etc/opendeploy/opendeploy.env
+ExecStart=/usr/bin/env node src/server.js
+Restart=always
+RestartSec=5
+User=opendeploy
+Group=opendeploy
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/opendeploy /var/log/opendeploy
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenDeploy Agent
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/opendeploy/apps/agent
+EnvironmentFile=/etc/opendeploy/opendeploy.env
+ExecStart=/usr/bin/env node src/server.js
+Restart=always
+RestartSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

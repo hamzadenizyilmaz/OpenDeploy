@@ -1,0 +1,7 @@
+{
+  "name": "@opendeploy/logger",
+  "version": "0.2.0",
+  "private": true,
+  "main": "src/index.js",
+  "type": "commonjs"
+}

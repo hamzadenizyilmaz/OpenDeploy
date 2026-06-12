@@ -1,0 +1,10 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Shell } from "../../components/Shell";
+import { PageHeader } from "../../components/PageHeader";
+import { DataTable } from "../../components/DataTable";
+import { Notice } from "../../components/Notice";
+import { ActionButton } from "../../components/ActionButton";
+import { apiFetch } from "../../lib/api";
+import { statusBadge, titleize } from "../../lib/format";
+export default function Pm2Page(){ const [rows,setRows]=useState([]); const [error,setError]=useState(""); const [message,setMessage]=useState(""); async function load(){try{const data=await apiFetch("/pm2"); setRows(data.processes||[]); if(data.warning) setMessage(data.warning);}catch(e){setError(e.message)}} useEffect(()=>{load()},[]); async function act(action,row){try{const data=await apiFetch(`/pm2/${action}`,{method:"POST",body:{name:row.name}}); setMessage(`${titleize(action)} requested for ${row.name}. ${data.warning||""}`); await load();}catch(e){setError(e.message)}} return <Shell><PageHeader title="PM2 Manager" description="Manage Node.js processes, restarts, memory and uptime." action={<ActionButton variant="secondary" onClick={load}>Refresh</ActionButton>} />{message?<div className="mb-4"><Notice type="success">{message}</Notice></div>:null}{error?<div className="mb-4"><Notice type="error">{error}</Notice></div>:null}<DataTable columns={[{key:"name",label:"Process"},{key:"status",label:"Status",render:(r)=><span className={`badge badge-${statusBadge(r.status)}`}>{titleize(r.status)}</span>},{key:"cpu",label:"CPU",render:(r)=>`${r.cpu||0}%`},{key:"memory",label:"Memory"},{key:"restarts",label:"Restarts"},{key:"uptime",label:"Uptime"},{key:"actions",label:"Actions",render:(r)=><div className="flex flex-wrap gap-2"><ActionButton variant="secondary" onClick={()=>act("restart",r)}>Restart</ActionButton><ActionButton variant="warning" onClick={()=>act("reload",r)}>Reload</ActionButton><ActionButton variant="danger" onClick={()=>act("stop",r)}>Stop</ActionButton></div>}]} rows={rows} empty="No PM2 processes found."/></Shell> }

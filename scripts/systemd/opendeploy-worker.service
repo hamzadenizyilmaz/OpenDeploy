@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenDeploy Worker
+After=network.target redis.service postgresql.service
+
+[Service]
+Type=simple
+User=opendeploy
+Group=opendeploy
+WorkingDirectory=/opt/opendeploy/apps/worker
+EnvironmentFile=/etc/opendeploy/opendeploy.env
+ExecStart=/usr/bin/env node src/worker.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

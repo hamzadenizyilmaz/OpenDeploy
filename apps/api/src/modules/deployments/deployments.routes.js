@@ -1,0 +1,15 @@
+const router = require("express").Router();
+const { z } = require("zod");
+const { prisma } = require("../../config/prisma");
+const { requireAuth } = require("../../middleware/auth");
+const { requirePermission } = require("../../middleware/rbac");
+const { validate } = require("../../middleware/validate");
+const { asyncHandler } = require("../../utils/asyncHandler");
+const { ok } = require("../../utils/response");
+const { deployQueue } = require("../../services/queues");
+const deployDto = z.object({ projectId: z.string().min(1), source: z.enum(["manual", "git_pull", "webhook", "rollback"]).default("manual"), branch: z.string().max(80).optional(), commitHash: z.string().max(120).optional() });
+router.use(requireAuth);
+router.get("/", requirePermission("deployments.manage"), asyncHandler(async (req, res) => { const items = await prisma.deployment.findMany({ take: 100, orderBy: { createdAt: "desc" }, include: { project: true, user: { select: { id: true, email: true, name: true } }, logs: { take: 5, orderBy: { createdAt: "desc" } } } }); return ok(res, "Deployment list", { items }); }));
+router.post("/", requirePermission("deployments.manage"), validate(deployDto), asyncHandler(async (req, res) => { const item = await prisma.deployment.create({ data: { projectId: req.body.projectId, userId: req.user.id, source: req.body.source, branch: req.body.branch, commitHash: req.body.commitHash, status: "queued" } }); const job = await deployQueue.add("deploy.run", { deploymentId: item.id, userId: req.user.id }); await prisma.auditLog.create({ data: { userId: req.user.id, action: "deploy_started", resource: "deployment", resourceId: item.id, metadata: { projectId: req.body.projectId, source: req.body.source, branch: req.body.branch, commitHash: req.body.commitHash || null, severity: "info" } } }); return ok(res, "Deployment queued", { item, jobId: job.id }); }));
+router.get("/:id", requirePermission("deployments.manage"), asyncHandler(async (req, res) => { const item = await prisma.deployment.findUnique({ where: { id: req.params.id }, include: { project: true, logs: { orderBy: { createdAt: "asc" } } } }); return ok(res, "Deployment detail", { item }); }));
+module.exports = router;

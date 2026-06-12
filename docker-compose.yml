@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: opendeploy-postgres
+    environment:
+      POSTGRES_DB: opendeploy
+      POSTGRES_USER: opendeploy
+      POSTGRES_PASSWORD: opendeploy
+    ports:
+      - "5432:5432"
+    volumes:
+      - opendeploy_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: opendeploy-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - opendeploy_redis:/data
+
+  dns-nameserver:
+    image: node:22-alpine
+    container_name: opendeploy-dns-nameserver
+    working_dir: /app
+    command: ["node", "src/server.js"]
+    environment:
+      DNS_BIND: 0.0.0.0
+      DNS_PORT: 5353
+    ports:
+      - "5353:5353/udp"
+      - "5353:5353/tcp"
+    volumes:
+      - "./OpenDeploy DNS Cloud/DNS_NameServer:/app:ro"
+
+  dns-cloud-api:
+    image: node:22-alpine
+    container_name: opendeploy-dns-cloud-api
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    environment:
+      NODE_ENV: development
+      DNS_CLOUD_API_PORT: 4300
+      DNS_CLOUD_API_URL: http://localhost:4300/api/v1
+      DNS_CLOUD_ADMIN_URL: http://localhost:4310
+      DNS_CLOUD_ADMIN_BOOTSTRAP_TOKEN: dev-dns-admin-token-change-me
+      DNS_DEFAULT_NS1: dp-ns1.opendeploy.com
+      DNS_DEFAULT_NS2: dp-ns2.opendeploy.com
+    ports:
+      - "4300:4300"
+    volumes:
+      - "./OpenDeploy DNS Cloud/DNS_Cloud_API:/app"
+
+  dns-admin-panel:
+    image: node:22-alpine
+    container_name: opendeploy-dns-admin-panel
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    environment:
+      NEXT_PUBLIC_DNS_CLOUD_API_URL: http://localhost:4300/api/v1
+      DNS_CLOUD_ADMIN_TOKEN: dev-dns-admin-token-change-me
+    ports:
+      - "4310:4310"
+    volumes:
+      - "./OpenDeploy DNS Cloud/DNS_Admin_Panel:/app"
+
+volumes:
+  opendeploy_pg:
+  opendeploy_redis:
